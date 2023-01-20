@@ -15,7 +15,7 @@ def panorama(imgs):
     thres = 0.2 # threshold for RANSAC inliers
     num_iter = 3000 # sampling times for RANSAC
     num_kps_for_H = 13 # sample n coordinates randomly as corners to estimate H
-    num_orb_matches = 100 # we only consider n best matches with lower distance.
+    n_best_matches = 100 # we only consider n best matches with shortest distance.
     
     # create the final stitched canvas
     h, w, c = imgs[0].shape
@@ -38,10 +38,10 @@ def panorama(imgs):
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         matches = bf.match(des1, des2)
         # sort them in ascending order of their distances so that best matches come to front.
-        matches = sorted(matches, key = lambda x:x.distance)
+        matches = sorted(matches, key = lambda x: x.distance)[:n_best_matches]
         # get the index of matched descriptors
-        q_idx = [match.queryIdx for match in matches][:num_orb_matches]
-        t_idx = [match.trainIdx for match in matches][:num_orb_matches]
+        q_idx = [match.queryIdx for match in matches]
+        t_idx = [match.trainIdx for match in matches]
         # use the index to find corresponding keypoints
         src_pts = np.array([kp1[idx].pt for idx in q_idx])
         dst_pts = np.array([kp2[idx].pt for idx in t_idx])
